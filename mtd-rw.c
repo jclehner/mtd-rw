@@ -38,8 +38,8 @@
 #error "Must be compiled as a module."
 #endif
 
+#define MOD_WARNING KERN_WARNING "mtd-rw: "
 #define MOD_INFO KERN_INFO "mtd-rw: "
-#define MOD_WARN KERN_WARN "mtd-rw: "
 #define MOD_ERR KERN_ERR "mtd-rw: "
 
 #define MTD_MAX (8 * sizeof(unlocked))
@@ -66,11 +66,11 @@ static int set_writeable(unsigned n, bool w)
 	err = -EEXIST;
 
 	if (w && !(mtd->flags & MTD_WRITEABLE)) {
-		printk(MOD_INFO "mtd%d: setting writeable flag\n");
+		printk(MOD_INFO "mtd%d: setting writeable flag\n", n);
 		mtd->flags |= MTD_WRITEABLE;
 		err = 0;
 	} else if (!w && (mtd->flags & MTD_WRITEABLE)) {
-		printk(MOD_INFO "mtd%d: clearing writeable flag\n");
+		printk(MOD_INFO "mtd%d: clearing writeable flag\n", n);
 		mtd->flags &= ~MTD_WRITEABLE;
 		err = 0;
 	}
@@ -101,7 +101,7 @@ static int __init mtd_unlocker_init(void)
 	}
 
 	if (i == MTD_MAX) {
-		printk(MOD_WARN "partitions beyond mtd%d are ignored\n", i - 1);
+		printk(MOD_WARNING "partitions beyond mtd%d are ignored\n", i - 1);
 	}
 
 	if (!unlocked) {
