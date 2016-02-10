@@ -1,11 +1,7 @@
-obj-m += mtd-rw.o
+obj-${CONFIG_MTD_RW} += mtd-rw.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-install:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules_install
-
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-
