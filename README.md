@@ -2,12 +2,10 @@ mtd-rw - Write-enabler for MTD partitions
 =========================================
 
 Sets the `MTD_WRITEABLE` flag on all MTD partitions that are marked readonly.
-When unloading, read-only partitions will be restored.
-
-This module is intended for embedded devices where the mtd partition
-layout may be hard-coded in the firmware. If, for some reason, you
-DO have to write to a read-only partition (which is often a bad idea),
-this module is the way to go.
+When unloading, read-only partitions will be restored. This module is intended
+for embedded devices where the mtd partition layout may be hard-coded in the
+firmware. If, for some reason, you DO have to write to a read-only partition
+(which is often a bad idea), this module is the way to go.
 
 The module is currently limited to the first 64 partitions, but this
 should suffice for most purposes.
