@@ -81,7 +81,7 @@ static int set_writeable(unsigned n, bool w)
 
 static int __init mtd_unlocker_init(void)
 {
-	unsigned i, count, err;
+	int i, count, err;
 
 	if (!i_want_a_brick) {
 		printk(MOD_ERR "must specify i_want_a_brick=1 to continue\n");
