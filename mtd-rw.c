@@ -37,16 +37,16 @@ static bool i_want_a_brick = false;
 module_param(i_want_a_brick, bool, S_IRUGO);
 MODULE_PARM_DESC(i_want_a_brick, "Make all partitions writeable");
 
-static int mtd_max = 0;
+static unsigned mtd_max = 0;
 static uint64_t unlocked = 0;
 
 static int __init mtd_unlocker_init(void)
 {
 	struct mtd_info *mtd;
-	int i, count;
+	unsigned i, count;
 
 	if (!i_want_a_brick) {
-		printk(MOD_ERR "i_want_a_brick not specified; aborting\n");
+		printk(MOD_ERR "i_want_a_brick=1 not specified; aborting\n");
 		return -EINVAL;
 	}
 
@@ -85,7 +85,7 @@ static int __init mtd_unlocker_init(void)
 static void __exit mtd_unlocker_exit(void)
 {
 	struct mtd_info *mtd;
-	int i;
+	unsigned i;
 
 	for (i = 0; i < mtd_max; ++i) {
 		if (unlocked & (1 << i)) {
