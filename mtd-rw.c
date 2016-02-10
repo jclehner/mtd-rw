@@ -31,44 +31,69 @@
 #endif
 
 #define MOD_INFO KERN_INFO "mtd-rw: "
+#define MOD_WARN KERN_WARN "mtd-rw: "
 #define MOD_ERR KERN_ERR "mtd-rw: "
+
+#define MTD_MAX (8 * sizeof(unlocked))
+
+static uint64_t unlocked = 0;
+static unsigned mtd_last = 0;
 
 static bool i_want_a_brick = false;
 module_param(i_want_a_brick, bool, S_IRUGO);
 MODULE_PARM_DESC(i_want_a_brick, "Make all partitions writeable");
 
-static unsigned mtd_max = 0;
-static uint64_t unlocked = 0;
+static int set_writeable(unsigned n, bool w)
+{
+	struct mtd_info *mtd = get_mtd_device(NULL, n);
+	int err;
+
+	if (IS_ERR(mtd)) {
+		if (PTR_ERR(mtd) != -ENODEV || !w) {
+			printk(MOD_ERR "mtd%d: error %ld\n", n, PTR_ERR(mtd));
+		}
+		return PTR_ERR(mtd);
+	}
+
+	err = -EEXIST;
+
+	if (w && !(mtd->flags & MTD_WRITEABLE)) {
+		printk(MOD_INFO "mtd%d: setting writeable flag\n");
+		mtd->flags |= MTD_WRITEABLE;
+		err = 0;
+	} else if (!w && (mtd->flags & MTD_WRITEABLE)) {
+		printk(MOD_INFO "mtd%d: clearing writeable flag\n");
+		mtd->flags &= ~MTD_WRITEABLE;
+		err = 0;
+	}
+
+	put_mtd_device(mtd);
+	return err;
+}
 
 static int __init mtd_unlocker_init(void)
 {
-	struct mtd_info *mtd;
-	unsigned i, count;
+	unsigned i, count, err;
 
 	if (!i_want_a_brick) {
-		printk(MOD_ERR "i_want_a_brick=1 not specified; aborting\n");
+		printk(MOD_ERR "must specify i_want_a_brick=1 to continue\n");
 		return -EINVAL;
 	}
 
 	count = 0;
 
-	for (i = 0; i < 8 * sizeof(unlocked); ++i) {
-		mtd = get_mtd_device(NULL, i);
-		if (IS_ERR(mtd)) {
-			if (PTR_ERR(mtd) != -ENODEV) {
-				printk(MOD_ERR "mtd%d: error %ld\n", i, PTR_ERR(mtd));
-				continue;
-			} else {
-				break;
-			}
-		} else if(!(mtd->flags & MTD_WRITEABLE)) {
-			printk(MOD_INFO "mtd%d: setting writeable flag\n", i);
-			mtd->flags |= MTD_WRITEABLE;
+	for (i = 0; i < MTD_MAX; ++i) {
+		err = set_writeable(i, true);
+		if (!err) {
 			unlocked |= (1 << i);
 			++count;
+		} else if (err == -ENODEV) {
+			break;
 		}
+	}
 
-		put_mtd_device(mtd);
+	if (i == MTD_MAX) {
+		printk(MOD_WARN "partitions beyond mtd%d are ignored\n", i - 1);
 	}
 
 	if (!unlocked) {
@@ -76,7 +101,7 @@ static int __init mtd_unlocker_init(void)
 		return -ENODEV;
 	}
 
-	mtd_max = i;
+	mtd_last = i;
 
 	printk(MOD_INFO "unlocked %d partitions\n", count);
 	return 0;
@@ -84,21 +109,13 @@ static int __init mtd_unlocker_init(void)
 
 static void __exit mtd_unlocker_exit(void)
 {
-	struct mtd_info *mtd;
 	unsigned i;
 
-	for (i = 0; i < mtd_max; ++i) {
-		if (unlocked & (1 << i)) {
-			mtd = get_mtd_device(NULL, i);
-			if (IS_ERR(mtd)) {
-				printk(MOD_ERR "mtd%d: cannot remove writeable flag\n", i);
-				continue;
-			} else if (mtd->flags & MTD_WRITEABLE) {
-				printk(MOD_ERR "mtd%d: removing writeable flag\n", i);
-				mtd->flags &= ~MTD_WRITEABLE;
-			}
+	printk(MOD_INFO "restoring flags\n");
 
-			put_mtd_device(mtd);
+	for (i = 0; i < mtd_last; ++i) {
+		if (unlocked & (1 << i)) {
+			set_writeable(i, false);
 		}
 	}
 }
