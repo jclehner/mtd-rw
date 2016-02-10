@@ -1,5 +1,5 @@
-mtd-rw
-======
+mtd-rw - Write-enabler for MTD partitions
+=========================================
 
 Sets the `MTD_WRITEABLE` flag on all MTD partitions that are marked readonly.
 When unloading, read-only partitions will be restored.
