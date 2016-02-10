@@ -1,5 +1,5 @@
-mtd-rw - Make all MTD partitions writeable
-==========================================
+mtd-rw
+======
 
 Sets the `MTD_WRITEABLE` flag on all MTD partitions that are
 marked readonly. When unloading, read-only partitions will be
