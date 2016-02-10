@@ -79,9 +79,9 @@ static int set_writeable(unsigned n, bool w)
 	return err;
 }
 
-static int __init mtd_unlocker_init(void)
+static int __init mtd_rw_init(void)
 {
-	int i, count, err;
+	int i, err;
 
 	if (!i_want_a_brick) {
 		printk(MOD_ERR "must specify i_want_a_brick=1 to continue\n");
@@ -94,7 +94,6 @@ static int __init mtd_unlocker_init(void)
 		err = set_writeable(i, true);
 		if (!err) {
 			unlocked |= (1 << i);
-			++count;
 		} else if (err == -ENODEV) {
 			break;
 		}
@@ -111,15 +110,12 @@ static int __init mtd_unlocker_init(void)
 
 	mtd_last = i;
 
-	printk(MOD_INFO "unlocked %d partitions\n", count);
 	return 0;
 }
 
-static void __exit mtd_unlocker_exit(void)
+static void __exit mtd_rw_exit(void)
 {
 	unsigned i;
-
-	printk(MOD_INFO "restoring flags\n");
 
 	for (i = 0; i < mtd_last; ++i) {
 		if (unlocked & (1 << i)) {
@@ -128,10 +124,10 @@ static void __exit mtd_unlocker_exit(void)
 	}
 }
 
-module_init(mtd_unlocker_init);
-module_exit(mtd_unlocker_exit);
+module_init(mtd_rw_init);
+module_exit(mtd_rw_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Joseph C. Lehner <joseph.c.lehner@gmail.com>");
-MODULE_DESCRIPTION("MTD unlocker");
+MODULE_DESCRIPTION("Write-enabler for MTD partitions");
 MODULE_VERSION("1");
