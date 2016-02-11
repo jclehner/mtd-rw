@@ -88,8 +88,6 @@ static int __init mtd_rw_init(void)
 		return -EINVAL;
 	}
 
-	count = 0;
-
 	for (i = 0; i < MTD_MAX; ++i) {
 		err = set_writeable(i, true);
 		if (!err) {
