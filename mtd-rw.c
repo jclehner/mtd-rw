@@ -20,6 +20,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/mtd/mtd.h>
+#include <linux/err.h>
 
 /*
  * This module is intended for embedded devices where the mtd partition
