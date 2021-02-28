@@ -1,7 +1,15 @@
-obj-${CONFIG_MTD_RW} += mtd-rw.o
+# Build module only if kernel supports MTD
+ifdef CONFIG_MTD
+obj-m += mtd-rw.o
+endif
 
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+KDIR ?= /lib/modules/$(shell uname -r)/build
+
+modules:
+	$(MAKE) -C $(KDIR) M=$$PWD modules
+
+modules_install:
+	$(MAKE) -C $(KDIR) M=$$PWD modules_install
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	$(MAKE) -C $(KDIR) M=$$PWD clean

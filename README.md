@@ -23,8 +23,3 @@ Usage:
 [52997.650000] mtd-rw: mtd4: setting writeable flag
 [52997.660000] mtd-rw: mtd6: setting writeable flag
 ```
-
-To build the module outside the OpenWRT-build-system, use
-```
-$ make CONFIG_MTD_RW=m
-```
